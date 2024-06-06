@@ -6,12 +6,21 @@ A library for validating and benchmarking LLMs inference.
 ```
 python3 scalellm_run_benchmark.py --input_file /data/dataset/F_alpaca_group_10_2.json --model_dir=/data/llama-2-7b-hf --batch_size=16
 ```
+- --input_file input json file
+- --model_dir model directory
+- --batch_size running batchsize
+- --data_format v1 or v2, indicate different input json format
 
 ## Run vllm Benchmark
 
 ```
 python3 vllm_run_benchmark.py --input_file /data/dataset/Chatbot_group_10_2.json --model_dir=/data/llama-2-7b-hf --batch_size=16
 ```
+
+- --input_file input json file
+- --model_dir model directory
+- --batch_size running batchsize
+- --data_format v1 or v2, indicate different input json format
 
 ## Run tensorrt_llm Benchmark
 
@@ -27,11 +36,10 @@ git clone https://github.com/NVIDIA/TensorRT-LLM.git
 python TensorRT-LLM/examples/qwen/convert_checkpoint.py --model_dir /data/qwen-7b --output_dir /data/qwen-7b-ckpt --dtype float16
 ```
 
-重要参数：
-- --workers 并行个数（tensor并行个数）
-- --model_dir huggingface模型的位置
-- --dtype 类型
-- --output_dir 输出ckpt位置
+- --workers parallel number (tensor parallel number)
+- --model_dir huggingface model directory
+- --dtype type
+- --output_dir output checkpoint directory
 
 ## 3. Build TensorRT Engine
 
