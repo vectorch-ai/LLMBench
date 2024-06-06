@@ -11,7 +11,19 @@ def parse_arguments(args=None):
     parser.add_argument('--input_file', type=str)
     parser.add_argument('--batch_size', type=int)
     parser.add_argument('--model_dir', type=str)
+    parser.add_argument('--data_format', type=str)
     return parser.parse_args(args=args)
+
+def read_json_input_v2(input_file=None):
+    input_prompt = []
+    if input_file.endswith('.json'):
+        with open(input_file, 'r') as f:
+            for line in f.readlines():
+                data = json.loads(line)
+                instruct = data['instruction']
+                prompt = data['input']
+                input_prompt.append(instruct + ' ' + prompt)
+    return input_prompt
 
 def read_json_input(input_file=None):
     input_prompt = []
@@ -47,7 +59,10 @@ def print_output(batch_input_prompt, outputs):
         print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
 
 def main(args):
-    input_prompt = read_json_input(input_file=args.input_file)
+    if args.data_format == 'v2':    
+        input_prompt = read_json_input_v2(input_file=args.input_file)
+    else:
+        input_prompt = read_json_input(input_file=args.input_file)
     loop_count = math.ceil(len(input_prompt) / args.batch_size)
 
     sampling_params = SamplingParams(temperature=0, max_tokens=100)
