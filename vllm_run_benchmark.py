@@ -8,10 +8,11 @@ from vllm import LLM, SamplingParams
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str)
-    parser.add_argument('--batch_size', type=int)
-    parser.add_argument('--model_dir', type=str)
-    parser.add_argument('--data_format', type=str)
+    parser.add_argument('--input_file', type=str, required=True)
+    parser.add_argument('--batch_size', type=int, required=True)
+    parser.add_argument('--model_dir', type=str, required=True)
+    parser.add_argument('--data_format', type=str, default=None)
+    parser.add_argument('--print_output', type=bool, default=False)
     return parser.parse_args(args=args)
 
 def read_json_input(input_file=None):
@@ -77,7 +78,8 @@ def main(args):
         t2 = time.time()
         total_time_cost += t2-t1
         #print("current time cost:%ss:" % (t2-t1))
-        #print_output(outputs)
+        if args.print_output is True:
+            print_output(outputs)
     print("=================Time Consumption================")
     print("total time cost: %ss:" % total_time_cost)
     print("average time cost: %ss:" % (total_time_cost / loop_count))

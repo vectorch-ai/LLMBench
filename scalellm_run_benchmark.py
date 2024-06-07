@@ -8,10 +8,11 @@ from scalellm import LLM, SamplingParams
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser()
-    parser.add_argument('--input_file', type=str)
-    parser.add_argument('--batch_size', type=int)
-    parser.add_argument('--model_dir', type=str)
-    parser.add_argument('--data_format', type=str)
+    parser.add_argument('--input_file', type=str, required=True)
+    parser.add_argument('--batch_size', type=int, required=True)
+    parser.add_argument('--model_dir', type=str, required=True)
+    parser.add_argument('--data_format', type=str, default=None)
+    parser.add_argument('--print_output', type=bool, default=False)
     return parser.parse_args(args=args)
 
 def read_json_input_v2(input_file=None):
@@ -52,10 +53,10 @@ def decode_prompt(batch_input_prompt,
     ]
     return batch_input_ids
 
-def print_output(outputs):
-    for output in outputs:
-        prompt = output.prompt
-        generated_text = output.outputs[0].text
+def print_output(batch_input_prompt, outputs):
+    for i in range(len(outputs)):
+        prompt = batch_input_prompt[i]
+        generated_text = outputs[i].outputs[0].text
         print(f"Prompt: {prompt!r}, Generated text: {generated_text!r}")
 
 def main(args):
@@ -77,7 +78,8 @@ def main(args):
         t2 = time.time()
         total_time_cost += t2-t1
         #print("current time cost:%ss:" % (t2-t1))
-        #print_output(outputs)
+        if args.print_output is True:
+            print_output(batched_input_prompt, outputs)
     print("=================Time Consumption================")
     print("total time cost: %ss:" % total_time_cost)
     print("average time cost: %ss:" % (total_time_cost / (loop_count)))
