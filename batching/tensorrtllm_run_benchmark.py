@@ -15,18 +15,18 @@
 
 import argparse
 import csv
-from pathlib import Path
-import time
-import math
 import json
-import numpy as np
-import torch
-from utils import (DEFAULT_HF_MODEL_DIRS, DEFAULT_PROMPT_TEMPLATES,
-                   load_tokenizer, read_model_name, throttle_generator)
+import math
+import time
+from pathlib import Path
 
+import numpy as np
 import tensorrt_llm
+import torch
 from tensorrt_llm.logger import logger
 from tensorrt_llm.runtime import PYTHON_BINDINGS, ModelRunner
+from utils import (DEFAULT_HF_MODEL_DIRS, load_tokenizer, read_model_name,
+                   throttle_generator)
 
 if PYTHON_BINDINGS:
     from tensorrt_llm.runtime import ModelRunnerCpp
@@ -379,9 +379,9 @@ def main(args):
     # bad_words_list = torch.Tensor(bad_words_list).to(torch.int32).to("cuda").contiguous()
     bad_words_list = None
 
-    prompt_template = None
-    if args.use_prompt_template and model_name in DEFAULT_PROMPT_TEMPLATES:
-        prompt_template = DEFAULT_PROMPT_TEMPLATES[model_name]
+    # prompt_template = None
+    # if args.use_prompt_template and model_name in DEFAULT_PROMPT_TEMPLATES:
+    #     prompt_template = DEFAULT_PROMPT_TEMPLATES[model_name]
 
     if args.data_format == 'v2':    
         input_prompt = read_json_input_v2(input_file=args.input_file)
@@ -512,8 +512,8 @@ def main(args):
                 sequence_lengths = batch_outputs['sequence_lengths']
                 context_logits = None
                 generation_logits = None
-                cum_log_probs = None
-                log_probs = None
+                # cum_log_probs = None
+                # log_probs = None
                 if runner.gather_context_logits:
                     context_logits = outputs['context_logits']
                 if runner.gather_generation_logits:

@@ -1,10 +1,11 @@
 import argparse
-import time
-import math
 import json
-import torch
+import math
+import time
 
+import torch
 from vllm import LLM, SamplingParams
+
 
 def parse_arguments(args=None):
     parser = argparse.ArgumentParser()
