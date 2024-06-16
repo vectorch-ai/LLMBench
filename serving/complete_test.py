@@ -4,9 +4,23 @@ import time
 from typing import Optional
 
 import orjson
-from locust import HttpUser, constant, events, run_single_user, task
-from locust_utils import update_custom_metric
+from locust import HttpUser, constant, events, run_single_user, task, stats
 from providers import SUPPROTED_PROVIDERS
+
+# set customed percentiles for statistics and charts
+stats.PERCENTILES_TO_STATISTICS = [0.5, 0.75, 0.9, 0.99]
+stats.PERCENTILES_TO_CHART = [0.5, 0.75, 0.9, 0.99]
+
+
+def update_custom_metric(name, value, length_value=0):
+    events.request.fire(
+        request_type="complete",
+        name=name,
+        response_time=value,
+        response_length=length_value,
+        exception=None,
+        context=None,
+    )
 
 
 class CompleteUser(HttpUser):
@@ -23,6 +37,7 @@ class CompleteUser(HttpUser):
         self._provider = SUPPROTED_PROVIDERS["scalellm"](
             model=self._model, options=self._options
         )
+        # TODO: send warmup requests
 
     @task
     def complete(self):
@@ -60,14 +75,18 @@ class CompleteUser(HttpUser):
                 if t_first_token is None:
                     t_first_token = now
                     if self._options.stream:
-                        update_custom_metric("first_token_latency", (now - t_start) * 1000)
+                        update_custom_metric(
+                            "first_token_latency", (now - t_start) * 1000
+                        )
 
                 if not chunk:
                     continue  # skip empty lines
 
                 try:
                     if t_prev:
-                        update_custom_metric("inter_token_latency", (now - t_prev) * 1000)
+                        update_custom_metric(
+                            "inter_token_latency", (now - t_prev) * 1000
+                        )
                     t_prev = now
 
                     if self._options.stream:
