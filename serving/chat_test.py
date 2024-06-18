@@ -4,9 +4,9 @@ import time
 from typing import Optional
 
 import orjson
-from locust import HttpUser, constant, events, run_single_user, task, stats
+from locust import HttpUser, events, run_single_user, task, stats
 from providers import SUPPROTED_PROVIDERS
-
+from token_bucket import TokenBucket
 # set customed percentiles for statistics and charts
 stats.PERCENTILES_TO_STATISTICS = [0.5, 0.75, 0.9, 0.99]
 stats.PERCENTILES_TO_CHART = [0.5, 0.75, 0.9, 0.99]
@@ -26,8 +26,6 @@ def update_custom_metric(name, value, length_value=0):
 class ChatUser(HttpUser):
     # Base hostname to swarm
     host = "http://localhost:8080"
-    # no wait time between tasks
-    wait_time = constant(1)
 
     def on_start(self):
         self._options = self.environment.parsed_options
@@ -37,6 +35,11 @@ class ChatUser(HttpUser):
         self._provider = SUPPROTED_PROVIDERS["scalellm"](
             model=self._model, options=self._options
         )
+        
+        if self._options.qps:
+            token_bucket = TokenBucket.get_instance(self._options.qps)
+            # wait_time will be called by Locust after each task
+            self.wait_time = token_bucket.wait_time
         # TODO: send warmup requests
 
     @task
@@ -170,7 +173,7 @@ def custom_parser(parser):
         dest="stream",
         action=argparse.BooleanOptionalAction,
         default=True,
-        help="Use the streaming API",
+        help="Whether to use streaming API",
     )
     parser.add_argument(
         "--temperature",
@@ -182,14 +185,14 @@ def custom_parser(parser):
     parser.add_argument(
         "--logprobs",
         type=int,
-        default=None,
-        help="Whether to ask for logprobs",
+        default=0,
+        help="how many logprobs to return. Defaults to 0",
     )
     parser.add_argument(
         "--qps",
         type=float,
-        default=None,
-        help="query per second",
+        default=0.0,
+        help="query per second. Defaults to 0.0 (no rate limiting)",
     )
 
 
